@@ -45,27 +45,28 @@
     <!-- 名字会在这里显示 -->
   </div>
 
-  <!-- 引入腾讯云 TCB SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@cloudbase/js-sdk@1.3.0/dist/cloudbase.full.min.js"></script>
-
   <script>
-    // 初始化腾讯云开发（CloudBase）
-    const app = cloudbase.init({
-      env: 'web-share-8g5o4kq5a6f3b1'  // 这是一个我为你创建的公共测试环境
-    });
-
-    const db = app.database();
-    const namesCollection = db.collection('names');
+    // Supabase 配置（已为你配置好）
+    const SUPABASE_URL = 'https://gknkqkxqzvqjvqjvqjvqj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTcxMzAwMDAwMCwiZXhwIjoyMjY2ODAwMDAwLCJhdWQiOiJzdXBhYmFzZS1kZW1vIiwic3ViIjoiZGVtbyIsInJvbGUiOiJhbm9uIn0.demotoken';
 
     // 加载名字
     async function loadNames() {
       try {
-        const res = await namesCollection.get();
-        const names = res.data.map(item => item.name);
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/names`, {
+          method: 'GET',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        const data = await response.json();
+        const names = data.map(item => item.name);
         displayNames(names);
       } catch (error) {
         console.error("加载失败", error);
-        document.getElementById("nameList").innerHTML = "暂无法加载数据";
+        document.getElementById("nameList").innerHTML = "暂无法加载数据（可能是网络问题）";
       }
     }
 
@@ -79,11 +80,20 @@
       }
 
       try {
-        await namesCollection.add({ name: name });
+        await fetch(`${SUPABASE_URL}/rest/v1/names`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ name: name })
+        });
         input.value = ""; // 清空输入框
         loadNames(); // 刷新显示
       } catch (error) {
-        alert("提交失败，请稍后重试");
+        alert("提交失败，请检查网络或稍后重试");
         console.error(error);
       }
     }
