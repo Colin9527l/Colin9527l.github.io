@@ -42,13 +42,11 @@
   </div>
 
   <div class="name-list" id="nameList">
-    <!-- 名字会在这里显示 -->
   </div>
 
   <script>
-    // ✅ 请替换以下两个值为你的真实数据
-    const SUPABASE_URL = 'https://jbknyzvztrzrrpehfltc.supabase.co';  // 替换成你的项目 URL
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia255enZ6dHJ6cnJwZWhmbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NDA4NjAsImV4cCI6MjA3MDExNjg2MH0.314sthAvpwesRRyodsAP2dRvreZ7Q3blAAC0RVGJXNI';  // 替换成你的 Anon Key
+    const SUPABASE_URL = 'https://jbknyzvztrzrrpehfltc.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia255enZ6dHJ6cnJwZWhmbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NDA4NjAsImV4cCI6MjA3MDExNjg2MH0.314sthAvpwesRRyodsAP2dRvreZ7Q3blAAC0RVGJXNI';
 
     async function loadNames() {
       try {
@@ -63,7 +61,7 @@
 
         if (!response.ok) {
           console.error('HTTP 错误:', response.status, response.statusText);
-          document.getElementById("nameList").innerHTML = "加载失败，请检查网络或配置";
+          document.getElementById("nameList").innerHTML = "加载失败";
           return;
         }
 
@@ -103,7 +101,7 @@
 
         if (!response.ok) {
           console.error('提交失败:', response.status, await response.text());
-          alert("提交失败，请稍后重试");
+          alert("提交失败");
           return;
         }
 
@@ -111,7 +109,7 @@
         loadNames();
       } catch (error) {
         console.error("提交错误", error);
-        alert("提交失败，请检查网络");
+        alert("提交失败");
       }
     }
 
@@ -121,9 +119,7 @@
         container.innerHTML = "<p>还没有人留下名字呢，你是第一个吗？</p>";
         return;
       }
-      container.innerHTML = names
-        .map(name => `<span class="name-item">${name}</span>`)
-        .join("");
+      container.innerHTML = names.map(name => `<span class="name-item">${name}</span>`).join("");
     }
 
     window.onload = loadNames;
