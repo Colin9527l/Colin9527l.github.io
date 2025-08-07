@@ -46,14 +46,14 @@
   </div>
 
   <script>
-    // Supabase 配置（已为你配置好）
-    const SUPABASE_URL = 'https://gknkqkxqzvqjvqjvqjvqj.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTcxMzAwMDAwMCwiZXhwIjoyMjY2ODAwMDAwLCJhdWQiOiJzdXBhYmFzZS1kZW1vIiwic3ViIjoiZGVtbyIsInJvbGUiOiJhbm9uIn0.demotoken';
+    // ✅ 替换为你的 Supabase 项目信息
+    const SUPABASE_URL = 'https://jbknyzvztrzrrpehfltc.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia255enZ6dHJ6cnJwZWhmbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NDA4NjAsImV4cCI6MjA3MDExNjg2MH0.314sthAvpwesRRyodsAP2dRvreZ7Q3blAAC0RVGJXNI';
 
     // 加载名字
     async function loadNames() {
       try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/names`, {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/table1`, {
           method: 'GET',
           headers: {
             'apikey': SUPABASE_ANON_KEY,
@@ -61,12 +61,20 @@
             'Content-Type': 'application/json'
           }
         });
+
         const data = await response.json();
-        const names = data.map(item => item.name);
-        displayNames(names);
+
+        // ✅ 关键修复：使用 data.data
+        if (Array.isArray(data.data)) {
+          const names = data.data.map(item => item.name1);
+          displayNames(names);
+        } else {
+          console.warn("数据格式异常", data);
+          document.getElementById("nameList").innerHTML = "暂无数据";
+        }
       } catch (error) {
         console.error("加载失败", error);
-        document.getElementById("nameList").innerHTML = "暂无法加载数据（可能是网络问题）";
+        document.getElementById("nameList").innerHTML = "无法加载数据，请检查网络或配置";
       }
     }
 
@@ -80,7 +88,7 @@
       }
 
       try {
-        await fetch(`${SUPABASE_URL}/rest/v1/names`, {
+        await fetch(`${SUPABASE_URL}/rest/v1/table1`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_ANON_KEY,
@@ -88,12 +96,12 @@
             'Content-Type': 'application/json',
             'Prefer': 'return=minimal'
           },
-          body: JSON.stringify({ name: name })
+          body: JSON.stringify({ name1: name })
         });
         input.value = ""; // 清空输入框
         loadNames(); // 刷新显示
       } catch (error) {
-        alert("提交失败，请检查网络或稍后重试");
+        alert("提交失败，请稍后重试");
         console.error(error);
       }
     }
