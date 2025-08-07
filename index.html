@@ -1,128 +1,315 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>共享名字墙</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 50px;
-      background-color: #f0f8ff;
-    }
-    h1 {
-      color: #4b7bec;
-    }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      margin: 10px;
-    }
-    .name-list {
-      margin-top: 30px;
-      font-size: 18px;
-    }
-    .name-item {
-      display: inline-block;
-      background: #e3f2fd;
-      margin: 5px;
-      padding: 8px 15px;
-      border-radius: 20px;
-      color: #1976d2;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>名字分享墙</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2575fc;
+            margin-bottom: 25px;
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+        }
+        .input-group {
+            display: flex;
+            margin-bottom: 25px;
+            gap: 10px;
+        }
+        #nameInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: border-color 0.3s;
+        }
+        #nameInput:focus {
+            outline: none;
+            border-color: #2575fc;
+            box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.2);
+        }
+        #submitBtn {
+            background: linear-gradient(to bottom, #2575fc, #1a66d0);
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            height: 52px;
+        }
+        #submitBtn:hover {
+            background: linear-gradient(to bottom, #1a66d0, #0d4ab3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.4);
+        }
+        #submitBtn:active {
+            transform: translateY(0);
+        }
+        .names-container {
+            margin-top: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            min-height: 300px;
+            overflow-y: auto;
+        }
+        .names-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2575fc;
+            font-size: 1.5rem;
+        }
+        .name-list {
+            list-style: none;
+        }
+        .name-item {
+            padding: 15px;
+            margin-bottom: 12px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        .name-item:last-child {
+            margin-bottom: 0;
+        }
+        .name-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+        }
+        .name-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #333;
+        }
+        .name-time {
+            margin-left: 15px;
+            color: #777;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .instructions {
+            background: #e3f2fd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 4px solid #2575fc;
+        }
+        .instructions h3 {
+            color: #2575fc;
+            margin-bottom: 10px;
+        }
+        .instructions ul {
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .alert {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        .footer {
+            margin-top: 30px;
+            color: #777;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            .input-group {
+                flex-direction: column;
+            }
+            #submitBtn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>你好</h1>
+    <div class="container">
+        <h1>你好！请留下你的名字</h1>
+        
+        <div class="input-group">
+            <input type="text" id="nameInput" placeholder="输入你的名字..." maxlength="30">
+            <button id="submitBtn">提交</button>
+        </div>
+        
+        <div id="alert" class="alert"></div>
+        
+        <div class="names-container">
+            <h2 class="names-title">其他用户留下的名字</h2>
+            <ul id="nameList" class="name-list">
+                <!-- 名字将动态加载到这里 -->
+            </ul>
+        </div>
+        
+        <div class="instructions">
+            <h3>使用说明</h3>
+            <ul>
+                <li>输入你的名字并点击"提交"按钮</li>
+                <li>所有名字会实时显示在下方</li>
+                <li>请确保输入合法的名字（最多30个字符）</li>
+                <li>名字将永久存储在Supabase数据库中</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>基于Supabase构建 | <a href="https://supabase.com" target="_blank" style="color: #2575fc; text-decoration: none;">Supabase</a> 服务</p>
+        </div>
+    </div>
 
-  <div>
-    <input type="text" id="nameInput" placeholder="请输入你的名字" />
-    <button onclick="submitName()">提交</button>
-  </div>
-
-  <div class="name-list" id="nameList">
-  </div>
-
-  <script>
-    const SUPABASE_URL = 'https://jbknyzvztrzrrpehfltc.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia255enZ6dHJ6cnJwZWhmbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NDA4NjAsImV4cCI6MjA3MDExNjg2MH0.314sthAvpwesRRyodsAP2dRvreZ7Q3blAAC0RVGJXNI';
-
-    async function loadNames() {
-      try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/table1`, {
-          method: 'GET',
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json'
-          }
+    <script>
+        // 重要提示：请在使用前替换以下两个值
+        // 1. 你的Supabase项目URL（在Supabase仪表板中找到）
+        // 2. 你的Supabase公开匿名密钥（在Supabase仪表板中找到）
+        const SUPABASE_URL = "https://jbknyzvztrzrrpehfltc.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia255enZ6dHJ6cnJwZWhmbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NDA4NjAsImV4cCI6MjA3MDExNjg2MH0.314sthAvpwesRRyodsAP2dRvreZ7Q3blAAC0RVGJXNI";
+        
+        // 初始化Supabase客户端
+        const supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // DOM元素
+        const nameInput = document.getElementById('nameInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const nameList = document.getElementById('nameList');
+        const alertDiv = document.getElementById('alert');
+        
+        // 显示成功或错误消息
+        function showAlert(message, isSuccess = false) {
+            alertDiv.textContent = message;
+            alertDiv.className = `alert ${isSuccess ? 'success' : ''}`;
+            alertDiv.style.display = 'block';
+            
+            // 2秒后隐藏消息
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 2000);
+        }
+        
+        // 获取当前时间的友好格式
+        function getFriendlyTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+        
+        // 添加新名字到列表
+        function addNameToList(name) {
+            const li = document.createElement('li');
+            li.className = 'name-item';
+            li.innerHTML = `
+                <span class="name-text">${name}</span>
+                <span class="name-time">· ${getFriendlyTime()}</span>
+            `;
+            nameList.prepend(li);
+        }
+        
+        // 从Supabase获取所有名字
+        async function loadNames() {
+            const { data, error } = await supabase
+                .from('table1')  // 使用你的表名
+                .select('table1, created_at')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('获取名字失败:', error);
+                showAlert('加载名字失败，请稍后重试');
+                return;
+            }
+            
+            // 清空列表并重新填充
+            nameList.innerHTML = '';
+            data.forEach(item => {
+                addNameToList(item.table1);  // 使用你的字段名
+            });
+        }
+        
+        // 提交名字到Supabase
+        async function submitName() {
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                showAlert('请输入你的名字');
+                return;
+            }
+            
+            if (name.length > 30) {
+                showAlert('名字太长了！最多30个字符');
+                return;
+            }
+            
+            // 提交到Supabase
+            const { error } = await supabase
+                .from('table1')  // 使用你的表名
+                .insert([{ table1: name }]);  // 使用你的字段名
+            
+            if (error) {
+                console.error('保存名字失败:', error);
+                showAlert('保存失败，请稍后重试');
+            } else {
+                addNameToList(name);
+                nameInput.value = '';
+                showAlert('名字已保存成功！', true);
+            }
+        }
+        
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查用户是否提供了有效的Supabase配置信息
+            if (SUPABASE_URL.includes('your-project-id') || SUPABASE_KEY.includes('your-anon-key')) {
+                showAlert('⚠️ 请在代码中替换Supabase配置信息！', false);
+            }
+            
+            // 事件监听
+            submitBtn.addEventListener('click', submitName);
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') submitName();
+            });
+            
+            // 加载现有名字
+            loadNames();
         });
-
-        if (!response.ok) {
-          console.error('HTTP 错误:', response.status, response.statusText);
-          document.getElementById("nameList").innerHTML = "加载失败";
-          return;
-        }
-
-        const data = await response.json();
-
-        if (Array.isArray(data.data)) {
-          const names = data.data.map(item => item.name1);
-          displayNames(names);
-        } else {
-          document.getElementById("nameList").innerHTML = "数据格式异常";
-        }
-      } catch (error) {
-        console.error("请求失败", error);
-        document.getElementById("nameList").innerHTML = "无法连接数据库";
-      }
-    }
-
-    async function submitName() {
-      const input = document.getElementById("nameInput");
-      const name = input.value.trim();
-      if (!name) {
-        alert("请输入名字！");
-        return;
-      }
-
-      try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/table1`, {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({ name1: name })
-        });
-
-        if (!response.ok) {
-          console.error('提交失败:', response.status, await response.text());
-          alert("提交失败");
-          return;
-        }
-
-        input.value = "";
-        loadNames();
-      } catch (error) {
-        console.error("提交错误", error);
-        alert("提交失败");
-      }
-    }
-
-    function displayNames(names) {
-      const container = document.getElementById("nameList");
-      if (names.length === 0) {
-        container.innerHTML = "<p>还没有人留下名字呢，你是第一个吗？</p>";
-        return;
-      }
-      container.innerHTML = names.map(name => `<span class="name-item">${name}</span>`).join("");
-    }
-
-    window.onload = loadNames;
-  </script>
+    </script>
 </body>
 </html>
