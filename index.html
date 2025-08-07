@@ -208,7 +208,7 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia255enZ6dHJ6cnJwZWhmbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NDA4NjAsImV4cCI6MjA3MDExNjg2MH0.314sthAvpwesRRyodsAP2dRvreZ7Q3blAAC0RVGJXNI";
         
         // 初始化Supabase客户端
-        const supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         
         // DOM元素
         const nameInput = document.getElementById('nameInput');
