@@ -163,13 +163,11 @@
     </div>
 
     <script>
-        // ========================
-        // 1. 配置管理 (关键！)
-        // ========================
         // ❗️重要：此代码将从部署环境的环境变量中读取配置。
         // 在您的部署平台（如 Vercel, Netlify）中，需要设置以下两个环境变量：
         // - SUPABASE_URL: 您的 Supabase 项目 URL
         // - SUPABASE_KEY: 您的 Supabase 公开匿名密钥
+	 import { createClient } from '@supabase/supabase-js';
         const SUPABASE_URL = "https://jbknyzvztrzrrpehfltc.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia255enZ6dHJ6cnJwZWhmbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NDA4NjAsImV4cCI6MjA3MDExNjg2MH0.314sthAvpwesRRyodsAP2dRvreZ7Q3blAAC0RVGJXNI";
 
@@ -336,4 +334,3 @@
     </script>
 </body>
 </html>
-
