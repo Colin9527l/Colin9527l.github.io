@@ -4,310 +4,346 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>名字分享墙</title>
+    <!-- 引入Supabase客户端库 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background-color: #f0f2f5;
             color: #333;
+            line-height: 1.6;
+            padding: 20px;
         }
+
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-            width: 100%;
             max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
             padding: 30px;
-            margin-top: 20px;
         }
+
         h1 {
             text-align: center;
-            color: #2575fc;
-            margin-bottom: 25px;
-            font-size: 2.2rem;
-            letter-spacing: 1px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 2rem;
         }
+
         .input-group {
             display: flex;
-            margin-bottom: 25px;
             gap: 10px;
+            margin-bottom: 20px;
         }
+
         #nameInput {
             flex: 1;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            transition: border-color 0.3s;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
         }
+
         #nameInput:focus {
             outline: none;
-            border-color: #2575fc;
-            box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.2);
+            border-color: #3498db;
         }
+
         #submitBtn {
-            background: linear-gradient(to bottom, #2575fc, #1a66d0);
+            padding: 12px 24px;
+            background-color: #3498db;
             color: white;
             border: none;
-            padding: 0 25px;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
+            border-radius: 8px;
+            font-size: 1rem;
             cursor: pointer;
-            transition: all 0.3s;
-            height: 52px;
+            transition: background-color 0.2s ease;
         }
-        #submitBtn:hover {
-            background: linear-gradient(to bottom, #1a66d0, #0d4ab3);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.4);
+
+        #submitBtn:hover:not(:disabled) {
+            background-color: #2980b9;
         }
-        #submitBtn:active {
-            transform: translateY(0);
+
+        #submitBtn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
         }
-        .names-container {
-            margin-top: 30px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
-            min-height: 300px;
-            overflow-y: auto;
-        }
-        .names-title {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #2575fc;
-            font-size: 1.5rem;
-        }
-        .name-list {
-            list-style: none;
-        }
-        .name-item {
-            padding: 15px;
-            margin-bottom: 12px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-        }
-        .name-item:last-child {
-            margin-bottom: 0;
-        }
-        .name-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
-        }
-        .name-text {
-            font-size: 1.2rem;
-            font-weight: 500;
-            color: #333;
-        }
-        .name-time {
-            margin-left: 15px;
-            color: #777;
-            font-size: 0.85rem;
-            flex-shrink: 0;
-        }
-        .instructions {
-            background: #e3f2fd;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 30px;
-            border-left: 4px solid #2575fc;
-        }
-        .instructions h3 {
-            color: #2575fc;
-            margin-bottom: 10px;
-        }
-        .instructions ul {
-            padding-left: 20px;
-        }
-        .instructions li {
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
+
         .alert {
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            font-size: 0.95rem;
             text-align: center;
-            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
-        .success {
-            background: #e8f5e9;
-            color: #388e3c;
+
+        .alert.show {
+            opacity: 1;
         }
-        .footer {
-            margin-top: 30px;
-            color: #777;
-            font-size: 0.9rem;
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .names-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .name-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            border: 1px solid #e9ecef;
+            transition: background-color 0.2s ease;
+        }
+
+        .name-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .name-text {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .name-time {
+            font-size: 0.85rem;
+            color: #6c757d;
+            white-space: nowrap;
+        }
+
+        .loading {
             text-align: center;
-        }
-        @media (max-width: 600px) {
-            .input-group {
-                flex-direction: column;
-            }
-            #submitBtn {
-                width: 100%;
-            }
+            padding: 20px;
+            color: #6c757d;
+            font-style: italic;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>你好！请留下你的名字</h1>
-        
+        <h1>名字分享墙</h1>
+
         <div class="input-group">
             <input type="text" id="nameInput" placeholder="输入你的名字..." maxlength="30">
             <button id="submitBtn">提交</button>
         </div>
-        
+
         <div id="alert" class="alert"></div>
-        
-        <div class="names-container">
-            <h2 class="names-title">其他用户留下的名字</h2>
-            <ul id="nameList" class="name-list">
-                <!-- 名字将动态加载到这里 -->
-            </ul>
-        </div>
-        
-        <div class="instructions">
-            <h3>使用说明</h3>
-            <ul>
-                <li>输入你的名字并点击"提交"按钮</li>
-                <li>所有名字会实时显示在下方</li>
-                <li>请确保输入合法的名字（最多30个字符）</li>
-                <li>名字将永久存储在Supabase数据库中</li>
-            </ul>
-        </div>
-        
-        <div class="footer">
-            <p>基于Supabase构建 | <a href="https://supabase.com" target="_blank" style="color: #2575fc; text-decoration: none;">Supabase</a> 服务</p>
-        </div>
+
+        <ul id="nameList" class="names-list"></ul>
     </div>
 
     <script>
-        // 重要提示：请在使用前替换以下两个值
-        // 1. 你的Supabase项目URL（在Supabase仪表板中找到）
-        // 2. 你的Supabase公开匿名密钥（在Supabase仪表板中找到）
-        const SUPABASE_URL = "https://jbknyzvztrzrrpehfltc.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia255enZ6dHJ6cnJwZWhmbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NDA4NjAsImV4cCI6MjA3MDExNjg2MH0.314sthAvpwesRRyodsAP2dRvreZ7Q3blAAC0RVGJXNI";
-        
-        // 初始化Supabase客户端
+        // ========================
+        // 1. 配置管理 (关键！)
+        // ========================
+        // ❗️重要提示：请在部署时通过环境变量设置以下值
+        // - SUPABASE_URL: 你的 Supabase 项目 URL
+        // - SUPABASE_KEY: 你的 Supabase 公开匿名密钥
+        // 在 GitHub Actions 等 CI/CD 工具中配置这些环境变量即可
+        const SUPABASE_URL = process.env.SUPABASE_URL || 'https://jbknyzvztrzrrpehfltc.supabase.co';
+        const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia255enZ6dHJ6cnJwZWhmbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NDA4NjAsImV4cCI6MjA3MDExNjg2MH0.314sthAvpwesRRyodsAP2dRvreZ7Q3blAAC0RVGJXNI';
+
+        // 初始化 Supabase 客户端
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        // DOM元素
+
+        // ========================
+        // 2. DOM 元素选择器
+        // ========================
         const nameInput = document.getElementById('nameInput');
         const submitBtn = document.getElementById('submitBtn');
         const nameList = document.getElementById('nameList');
         const alertDiv = document.getElementById('alert');
-        
-        // 显示成功或错误消息
-        function showAlert(message, isSuccess = false) {
-            alertDiv.textContent = message;
-            alertDiv.className = `alert ${isSuccess ? 'success' : ''}`;
-            alertDiv.style.display = 'block';
-            
-            // 2秒后隐藏消息
-            setTimeout(() => {
-                alertDiv.style.display = 'none';
-            }, 2000);
+
+        // ========================
+        // 3. 工具函数
+        // ========================
+
+        /**
+         * 安全地转义用户输入，防止XSS攻击
+         * @param {string} str - 原始字符串
+         * @returns {string} - 转义后的字符串
+         */
+        function sanitizeInput(str) {
+            const div = document.createElement('div');
+            div.textContent = str; // 自动转义HTML标签
+            return div.innerHTML;
         }
-        
-        // 获取当前时间的友好格式
+
+        /**
+         * 获取当前时间的友好格式 (HH:mm)
+         * @returns {string} - 格式化后的时间
+         */
         function getFriendlyTime() {
             const now = new Date();
-            return now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
-        
-        // 添加新名字到列表
+
+        /**
+         * 显示一个带有自动隐藏功能的提示信息
+         * @param {string} message - 提示内容
+         * @param {boolean} isSuccess - 是否为成功消息
+         */
+        function showAlert(message, isSuccess = false) {
+            alertDiv.textContent = message;
+            alertDiv.className = `alert ${isSuccess ? 'success' : 'error'}`;
+            alertDiv.classList.add('show');
+
+            // 2秒后自动隐藏
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+            }, 2000);
+        }
+
+        /**
+         * 向列表中添加一个新名字项
+         * @param {string} name - 名字文本
+         */
         function addNameToList(name) {
             const li = document.createElement('li');
             li.className = 'name-item';
             li.innerHTML = `
-                <span class="name-text">${name}</span>
+                <span class="name-text">${sanitizeInput(name)}</span>
                 <span class="name-time">· ${getFriendlyTime()}</span>
             `;
-            nameList.prepend(li);
+            nameList.prepend(li); // 插入到最前面
         }
-        
-        // 从Supabase获取所有名字
+
+        // ========================
+        // 4. 核心业务逻辑
+        // ========================
+
+        /**
+         * 从 Supabase 加载所有名字
+         */
         async function loadNames() {
-            const { data, error } = await supabase
-                .from('table1')  // 使用你的表名
-                .select('table1, created_at')
-                .order('created_at', { ascending: false });
-            
-            if (error) {
-                console.error('获取名字失败:', error);
-                showAlert('加载名字失败，请稍后重试');
-                return;
+            // 显示加载状态
+            nameList.innerHTML = '<li class="loading">加载中...</li>';
+
+            try {
+                const { data, error } = await supabase
+                    .from('table1') // 替换为您的实际表名
+                    .select('table1, created_at')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('获取名字失败:', error);
+                    throw new Error('网络错误或数据库访问失败');
+                }
+
+                // 清空列表并填充数据
+                nameList.innerHTML = '';
+                if (data && data.length > 0) {
+                    data.forEach(item => {
+                        addNameToList(item.table1); // 替换为您的实际字段名
+                    });
+                } else {
+                    nameList.innerHTML = '<li class="loading">暂无名字记录</li>';
+                }
+
+            } catch (err) {
+                console.error('加载名字时发生错误:', err);
+                showAlert('加载名字失败，请稍后重试', false);
             }
-            
-            // 清空列表并重新填充
-            nameList.innerHTML = '';
-            data.forEach(item => {
-                addNameToList(item.table1);  // 使用你的字段名
-            });
         }
-        
-        // 提交名字到Supabase
+
+        /**
+         * 将用户输入的名字提交到 Supabase
+         */
         async function submitName() {
-            const name = nameInput.value.trim();
-            
-            if (!name) {
-                showAlert('请输入你的名字');
+            const rawName = nameInput.value.trim();
+
+            // 输入验证
+            if (!rawName) {
+                showAlert('请输入你的名字', false);
                 return;
             }
-            
-            if (name.length > 30) {
-                showAlert('名字太长了！最多30个字符');
+
+            if (rawName.length > 30) {
+                showAlert('名字太长了！最多30个字符', false);
                 return;
             }
-            
-            // 提交到Supabase
-            const { error } = await supabase
-                .from('table1')  // 使用你的表名
-                .insert([{ table1: name }]);  // 使用你的字段名
-            
-            if (error) {
-                console.error('保存名字失败:', error);
-                showAlert('保存失败，请稍后重试');
-            } else {
-                addNameToList(name);
-                nameInput.value = '';
-                showAlert('名字已保存成功！', true);
+
+            // 禁用按钮，防止重复提交
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+
+            try {
+                // 使用转义后的名字
+                const safeName = sanitizeInput(rawName);
+                const { error } = await supabase
+                    .from('table1') // 替换为您的实际表名
+                    .insert([{ table1: safeName }]); // 替换为您的实际字段名
+
+                if (error) {
+                    console.error('保存名字失败:', error);
+                    throw new Error('保存失败');
+                }
+
+                // 成功：更新UI
+                addNameToList(safeName);
+                nameInput.value = ''; // 清空输入框
+                showAlert('名字已成功保存！', true);
+
+            } catch (err) {
+                console.error('提交名字时发生错误:', err);
+                showAlert('提交失败，请稍后重试', false);
+            } finally {
+                // 无论成功失败，都恢复按钮状态
+                submitBtn.disabled = false;
+                submitBtn.textContent = '提交';
             }
         }
-        
-        // 初始化应用
+
+        // ========================
+        // 5. 应用初始化
+        // ========================
         document.addEventListener('DOMContentLoaded', () => {
-            // 检查用户是否提供了有效的Supabase配置信息
+            // 检查是否已正确配置 Supabase（用于开发调试）
             if (SUPABASE_URL.includes('your-project-id') || SUPABASE_KEY.includes('your-anon-key')) {
-                showAlert('⚠️ 请在代码中替换Supabase配置信息！', false);
+                showAlert('⚠️ 请在部署时配置正确的 Supabase 环境变量！', false);
+                return;
             }
-            
+
             // 事件监听
             submitBtn.addEventListener('click', submitName);
             nameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') submitName();
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // 防止默认回车行为
+                    submitName();
+                }
             });
-            
-            // 加载现有名字
+
+            // 页面加载时，先尝试加载名字
             loadNames();
         });
     </script>
