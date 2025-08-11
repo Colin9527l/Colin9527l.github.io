@@ -166,12 +166,12 @@
         // ========================
         // 1. 配置管理 (关键！)
         // ========================
-        // ❗️重要提示：请在部署时通过环境变量设置以下值
-        // - SUPABASE_URL: 你的 Supabase 项目 URL
-        // - SUPABASE_KEY: 你的 Supabase 公开匿名密钥
-        // 在 GitHub Actions 等 CI/CD 工具中配置这些环境变量即可
-        const SUPABASE_URL = process.env.SUPABASE_URL || 'https://jbknyzvztrzrrpehfltc.supabase.co';
-        const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia255enZ6dHJ6cnJwZWhmbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NDA4NjAsImV4cCI6MjA3MDExNjg2MH0.314sthAvpwesRRyodsAP2dRvreZ7Q3blAAC0RVGJXNI';
+        // ❗️重要：此代码将从部署环境的环境变量中读取配置。
+        // 在您的部署平台（如 Vercel, Netlify）中，需要设置以下两个环境变量：
+        // - SUPABASE_URL: 您的 Supabase 项目 URL
+        // - SUPABASE_KEY: 您的 Supabase 公开匿名密钥
+        const SUPABASE_URL = https://jbknyzvztrzrrpehfltc.supabase.co;
+        const SUPABASE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impia255enZ6dHJ6cnJwZWhmbHRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NDA4NjAsImV4cCI6MjA3MDExNjg2MH0.314sthAvpwesRRyodsAP2dRvreZ7Q3blAAC0RVGJXNI;
 
         // 初始化 Supabase 客户端
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -187,17 +187,6 @@
         // ========================
         // 3. 工具函数
         // ========================
-
-        /**
-         * 安全地转义用户输入，防止XSS攻击
-         * @param {string} str - 原始字符串
-         * @returns {string} - 转义后的字符串
-         */
-        function sanitizeInput(str) {
-            const div = document.createElement('div');
-            div.textContent = str; // 自动转义HTML标签
-            return div.innerHTML;
-        }
 
         /**
          * 获取当前时间的友好格式 (HH:mm)
@@ -232,10 +221,10 @@
             const li = document.createElement('li');
             li.className = 'name-item';
             li.innerHTML = `
-                <span class="name-text">${sanitizeInput(name)}</span>
+                <span class="name-text">${name}</span>
                 <span class="name-time">· ${getFriendlyTime()}</span>
             `;
-            nameList.prepend(li); // 插入到最前面
+            nameList.prepend(li);
         }
 
         // ========================
@@ -298,11 +287,9 @@
             submitBtn.textContent = '提交中...';
 
             try {
-                // 使用转义后的名字
-                const safeName = sanitizeInput(rawName);
                 const { error } = await supabase
                     .from('table1') // 替换为您的实际表名
-                    .insert([{ table1: safeName }]); // 替换为您的实际字段名
+                    .insert([{ table1: rawName }]); // 替换为您的实际字段名
 
                 if (error) {
                     console.error('保存名字失败:', error);
@@ -310,7 +297,7 @@
                 }
 
                 // 成功：更新UI
-                addNameToList(safeName);
+                addNameToList(rawName);
                 nameInput.value = ''; // 清空输入框
                 showAlert('名字已成功保存！', true);
 
@@ -329,8 +316,8 @@
         // ========================
         document.addEventListener('DOMContentLoaded', () => {
             // 检查是否已正确配置 Supabase（用于开发调试）
-            if (SUPABASE_URL.includes('your-project-id') || SUPABASE_KEY.includes('your-anon-key')) {
-                showAlert('⚠️ 请在部署时配置正确的 Supabase 环境变量！', false);
+            if (!SUPABASE_URL || !SUPABASE_KEY) {
+                showAlert('⚠️ 请在部署环境中配置 SUPABASE_URL 和 SUPABASE_KEY 环境变量！', false);
                 return;
             }
 
